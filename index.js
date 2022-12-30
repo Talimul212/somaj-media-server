@@ -21,18 +21,31 @@ async function run() {
         // Mongodb folder and file add or contion part
         const allpostsCollection = client.db('somaj-media').collection('allposts');
         const usersCollection = client.db('somaj-media').collection('users');
-
+        const allcommentsCollection = client.db('somaj-media').collection('allcomments');
+        
         
         app.post('/users', async (req, res) => {
             const user = req.body;
             const result = await usersCollection.insertOne(user);
             res.send(result);
         })
+        app.get('/users/:email', async (req, res) => {
+            const email = req.params.email;
+            console.log(email);
+            const query = { email }
+            const products = await usersCollection.find(query).toArray();
+            console.log(products);
+            res.send(products);
+        })
 
         app.post('/allposts', async (req, res) => {
             const post = req.body;
-            console.log(post);
             const result = await allpostsCollection.insertOne(post);
+            res.send(result);
+        });
+        app.post('/allcomments', async (req, res) => {
+            const post = req.body;
+            const result = await allcommentsCollection.insertOne(post);
             res.send(result);
         });
         
@@ -41,10 +54,23 @@ async function run() {
             const posts = await allpostsCollection.find(query).toArray();
             res.send(posts);
         });
+        
+        app.get('/allcomments/:id',  async (req, res) => {
+            const id = req.params.id;
+            const query = { id:id };
+            const posts = await allcommentsCollection.find(query).toArray();
+            res.send(posts);
+        });
+        
+        app.get('/topposts', async (req, res) => {
+            const query = {};
+            const cursor = allpostsCollection.find(query);
+            const services = await cursor.limit(3).toArray();
+            res.send(services);
+        });
 
         app.get('/allposts/:id', async (req, res) => {
             const id = req.params.id;
-            console.log(id);
             const query = { _id: ObjectId(id) };
             const booking = await allpostsCollection.findOne(query);
             res.send(booking);
